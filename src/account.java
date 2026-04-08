@@ -1,10 +1,10 @@
 public class account {
     private double amount;
-    private String name, history;
+    private String accountname, history;
 
-    public account(double amount, String name, String history) {
+    public account(String accountname, double amount,String history) {
         this.amount = amount;
-        this.name = name;
+        this.accountname = accountname;
         this.history = history;
     }
 
@@ -17,11 +17,11 @@ public class account {
     }
 
     public String getName() {
-        return name;
+        return accountname;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setName(String accountname) {
+        this.accountname = accountname;
     }
 
     public String getHistory() {
