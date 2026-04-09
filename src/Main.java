@@ -1,48 +1,56 @@
-import java.util.ArrayList;
-import java.util.Scanner;
+import UI.DashboardPanel;
 
-public class Main{
-    public static void main() {
-        Scanner sc = new Scanner(System.in);
-        ArrayList<account> accounts = new ArrayList<>();
+import javax.swing.*;
+import java.awt.*;
 
-        System.out.println("would you like to add a bank? y or n");
-        String x = sc.nextLine();
-        if (x.equalsIgnoreCase("y")){
-            System.out.println("Enter the name of the bank:");
-            String bankName = sc.nextLine();
+public class Main extends JFrame {
 
-            System.out.println("would you like to add an account? y or n");
-            String y = sc.nextLine();
-            while (y.equalsIgnoreCase("y")){
-                System.out.println("Enter the name of the account: ");
-                String acctName = sc.nextLine();
+    public Main() {
+        setTitle("Financial Tracker");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(1000, 600);
+        setMinimumSize(new Dimension(900, 550));
+        setLocationRelativeTo(null);
 
-                System.out.println("Enter the balance of the account: ");
-                double acctBalance = sc.nextDouble();
-                sc.nextLine();
+        JTabbedPane tabs = new JTabbedPane(JTabbedPane.LEFT);
+        tabs.addTab("Dashboard", new DashboardPanel());
+        tabs.addTab("Accounts",  emptyPanel("Accounts"));
+        tabs.addTab("Settings",  emptyPanel("Settings"));
+        tabs.addTab("Help",      emptyPanel("Help"));
 
-                System.out.println("Enter the history: ");
-                String history = sc.nextLine();
-
-                accounts.add(new account(acctName,acctBalance,history));
-
-                System.out.println("would you like to add an account? y or n");
-                y = sc.nextLine();
-
-            }
-
-        }
-        System.out.println("Total Assets: " + String.format("%.2f", totalAssets(accounts)));
-    }
-    public static double totalAssets(ArrayList<account> accounts){
-        double total = 0;
-        if (!accounts.isEmpty()){
-            for(account a : accounts){
-                total+= a.getAmount();
-            }
-        }
-        return total;
+        styleTabs(tabs);
+        add(tabs);
     }
 
+    JPanel emptyPanel(String title) {
+        JPanel p = new JPanel(new BorderLayout());
+        JLabel label = new JLabel(title, SwingConstants.CENTER);
+        label.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        p.add(label);
+        return p;
+    }
+
+    void styleTabs(JTabbedPane tabs) {
+        Color sidebarGreen = new Color(30, 110, 50);
+        Color textColor    = Color.WHITE;
+        tabs.setBackground(sidebarGreen);
+
+        for (int i = 0; i < tabs.getTabCount(); i++) {
+            JPanel tab = new JPanel(new GridBagLayout());
+            tab.setPreferredSize(new Dimension(140, 55));
+            tab.setBackground(sidebarGreen);
+            tab.setOpaque(true);
+
+            JLabel label = new JLabel(tabs.getTitleAt(i));
+            label.setFont(new Font("Segoe UI", Font.BOLD, 15));
+            label.setForeground(textColor);
+            tab.add(label);
+
+            tabs.setTabComponentAt(i, tab);
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new Main().setVisible(true));
+    }
 }
