@@ -8,7 +8,7 @@ public class Main extends JFrame {
     public Main() {
         setTitle("Financial Tracker");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1120, 600);
+        setSize(1160, 600);
         setResizable(false);
         setLocationRelativeTo(null);
 

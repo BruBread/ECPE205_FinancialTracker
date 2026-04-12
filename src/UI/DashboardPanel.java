@@ -27,8 +27,20 @@ public class DashboardPanel extends JPanel {
         setBorder(new EmptyBorder(20,20,20,20));
         setBackground(new Color(242,244,247));
 
-        add(leftPanel(), BorderLayout.WEST);
-        add(rightPanel(), BorderLayout.CENTER);
+        JSplitPane split =
+                new JSplitPane(
+                        JSplitPane.HORIZONTAL_SPLIT,
+                        leftPanel(),
+                        rightPanel()
+                );
+
+        split.setDividerLocation(520); // width of Transaction History
+        split.setDividerSize(0);       // hides divider line
+        split.setBorder(null);
+
+        split.setResizeWeight(0.45);
+
+        add(split, BorderLayout.CENTER);
 
         refreshAll();
     }
@@ -66,9 +78,20 @@ public class DashboardPanel extends JPanel {
         return panel;
     }
 
+    private String shorten(String text, int max){
+
+        if(text == null) return "";
+
+        if(text.length() <= max)
+            return text;
+
+        return text.substring(0,max-3) + "...";
+    }
+
     private JPanel transactionItem(Transaction t) {
 
-        JPanel card = new JPanel(new BorderLayout(10,0));
+        JPanel card = new JPanel(new BorderLayout());
+        card.setLayout(new BorderLayout(8,0));
         card.setMaximumSize(new Dimension(Integer.MAX_VALUE,64));
         card.setBackground(BG_WHITE);
 
@@ -76,6 +99,9 @@ public class DashboardPanel extends JPanel {
                 BorderFactory.createMatteBorder(0,0,1,0,BORDER_GRAY),
                 new EmptyBorder(10,12,10,12)
         ));
+
+        card.setMinimumSize(new Dimension(0,64));
+        card.setMaximumSize(new Dimension(Integer.MAX_VALUE,64));
 
         JLabel logoLabel = new JLabel();
         logoLabel.setPreferredSize(new Dimension(38,38));
@@ -89,14 +115,20 @@ public class DashboardPanel extends JPanel {
             logoLabel.setFont(new Font("Segoe UI",Font.BOLD,18));
         }
 
-        JLabel nameLabel = new JLabel(t.bank);
+        JLabel nameLabel = new JLabel(shorten(t.bank,22));
+        nameLabel.setHorizontalAlignment(JLabel.LEFT);
+        nameLabel.setPreferredSize(new Dimension(140,18));
         nameLabel.setFont(new Font("Segoe UI",Font.BOLD,13));
+        nameLabel.setMaximumSize(new Dimension(140,20));
 
         JLabel dateLabel = new JLabel(t.date);
         dateLabel.setFont(new Font("Segoe UI",Font.PLAIN,11));
         dateLabel.setForeground(Color.GRAY);
 
         JPanel textPanel = new JPanel(new GridLayout(2,1));
+        textPanel.setPreferredSize(new Dimension(140,36));
+        textPanel.setPreferredSize(null);
+        textPanel.setMaximumSize(null);
         textPanel.setOpaque(false);
         textPanel.add(nameLabel);
         textPanel.add(dateLabel);
@@ -117,21 +149,26 @@ public class DashboardPanel extends JPanel {
 
         JPanel badgeWrap = new JPanel(new BorderLayout());
         badgeWrap.setOpaque(false);
-        badgeWrap.setPreferredSize(new Dimension(95,24));
+        badgeWrap.setPreferredSize(new Dimension(100,24));
+        badgeWrap.setMinimumSize(new Dimension(100,24));
         badgeWrap.add(typeBadge,BorderLayout.CENTER);
 
         String sign="";
         if(t.type.equals("Deposit")) sign="+";
         if(t.type.equals("Withdraw") || t.type.equals("Delete")) sign="-";
 
-        JLabel amtLabel = new JLabel(sign+"₱"+String.format("%,.2f",t.amount));
+        JLabel amtLabel = new JLabel(
+                shortenCurrency(sign+"₱"+String.format("%,.2f",t.amount), 16)
+        );
         amtLabel.setFont(new Font("Segoe UI",Font.BOLD,13));
         amtLabel.setForeground(sign.equals("+") ? new Color(50,160,80) : new Color(210,70,60));
         amtLabel.setHorizontalAlignment(JLabel.RIGHT);
 
         JPanel amtWrap = new JPanel(new BorderLayout());
         amtWrap.setOpaque(false);
-        amtWrap.setPreferredSize(new Dimension(110,24));
+        amtWrap.setPreferredSize(new Dimension(140,24));
+        amtWrap.setMinimumSize(new Dimension(140,24));
+        amtWrap.setMaximumSize(new Dimension(140,24));
         amtWrap.add(amtLabel,BorderLayout.EAST);
 
         JPanel left = new JPanel(new BorderLayout(8,0));
@@ -144,6 +181,14 @@ public class DashboardPanel extends JPanel {
         card.add(amtWrap,BorderLayout.EAST);
 
         return card;
+    }
+
+    private String shortenCurrency(String text, int max){
+
+        if(text.length() <= max)
+            return text;
+
+        return text.substring(0, max-3) + "...";
     }
 
     // RIGHT PANEL
