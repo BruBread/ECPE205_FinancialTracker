@@ -113,25 +113,40 @@ public class AddAccountDialog extends JDialog {
 
     private void loadPresets(){
 
-        presets.put("Select bank...",null);
-        presets.put("GCash",loadIcon("gcash.png"));
-        presets.put("Maya",loadIcon("maya.png"));
-        presets.put("GoTyme",loadIcon("gotyme.png"));
+        presets.put("Select bank...", null);
 
-        for(String name:presets.keySet())
+        presets.put("GCash", loadIcon("gcash.png"));
+        presets.put("Maya", loadIcon("maya.png"));
+        presets.put("GoTyme", loadIcon("gotyme.png"));
+
+        presets.put("BDO", loadIcon("bdo.png"));
+        presets.put("BPI", loadIcon("bpi.png"));
+        presets.put("MariBank", loadIcon("maribank.png"));
+        presets.put("UnionBank", loadIcon("unionbank.png"));
+
+        for(String name : presets.keySet())
             presetDropdown.addItem(name);
 
         presetDropdown.addActionListener(e -> {
-            String selected = (String) presetDropdown.getSelectedItem();
-            if (selected == null || presets.get(selected) == null) {
+
+            String selected = (String)presetDropdown.getSelectedItem();
+
+            if(selected == null || presets.get(selected) == null){
+
                 logo = null;
+
                 preview.setIcon(null);
                 preview.setText("No logo");
-                nameField.setText("");   // clears Bank / Wallet Name input
+
+                nameField.setText("");
+
                 return;
             }
+
             nameField.setText(selected);
+
             logo = presets.get(selected);
+
             setPreview(logo);
         });
     }
