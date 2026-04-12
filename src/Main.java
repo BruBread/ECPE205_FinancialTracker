@@ -31,24 +31,78 @@ public class Main extends JFrame {
     }
 
     void styleTabs(JTabbedPane tabs) {
-        Color sidebarGreen = new Color(30, 110, 50);
-        Color textColor    = Color.WHITE;
+
+        Color sidebarGreen = new Color(30,110,50);
+        Color selectedGreen = new Color(24,90,42);
+
         tabs.setBackground(sidebarGreen);
 
-        for (int i = 0; i < tabs.getTabCount(); i++) {
-            JPanel tab = new JPanel(new GridBagLayout());
-            tab.setPreferredSize(new Dimension(140, 55));
-            tab.setBackground(sidebarGreen);
-            tab.setOpaque(true);
+        tabs.setUI(new javax.swing.plaf.basic.BasicTabbedPaneUI() {
 
-            JLabel label = new JLabel(tabs.getTitleAt(i));
-            label.setFont(new Font("Segoe UI", Font.BOLD, 15));
-            label.setForeground(textColor);
+            @Override
+            protected void paintContentBorder(Graphics g,
+                                              int tabPlacement,
+                                              int selectedIndex) {
+
+                // removes white border around content
+            }
+
+            @Override
+            protected void paintTabBackground(Graphics g,
+                                              int tabPlacement,
+                                              int tabIndex,
+                                              int x, int y,
+                                              int w, int h,
+                                              boolean isSelected) {
+
+                g.setColor(
+                        isSelected
+                                ? selectedGreen
+                                : sidebarGreen
+                );
+
+                g.fillRect(x, y, w, h);
+            }
+
+            @Override
+            protected void paintFocusIndicator(Graphics g,
+                                               int tabPlacement,
+                                               Rectangle[] rects,
+                                               int tabIndex,
+                                               Rectangle iconRect,
+                                               Rectangle textRect,
+                                               boolean isSelected) {
+
+                // removes dotted focus box
+            }
+        });
+
+        for (int i = 0; i < tabs.getTabCount(); i++) {
+
+            JPanel tab = new JPanel(new GridBagLayout());
+
+            tab.setOpaque(false);
+
+            tab.setPreferredSize(
+                    new Dimension(140, 55));
+
+            JLabel label =
+                    new JLabel(
+                            tabs.getTitleAt(i));
+
+            label.setFont(
+                    new Font("Segoe UI",
+                            Font.BOLD,
+                            15));
+
+            label.setForeground(Color.WHITE);
+
             tab.add(label);
 
             tabs.setTabComponentAt(i, tab);
         }
     }
+
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new Main().setVisible(true));
