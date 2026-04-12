@@ -47,7 +47,7 @@ public class DashboardPanel extends JPanel {
                 new EmptyBorder(0, 0, 0, 0)));
 
         // Headers here
-        JLabel header = new JLabel("Transaction History");
+        JLabel header = new JLabel("   Transaction History");
         header.setFont(new Font("Segoe UI", Font.BOLD, 14));
         header.setPreferredSize(new Dimension(0, 42));
         header.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, BORDER_GRAY));
@@ -103,8 +103,12 @@ public class DashboardPanel extends JPanel {
         typeBadge.setOpaque(true);
         typeBadge.setForeground(Color.WHITE);
         typeBadge.setFont(new Font("Segoe UI", Font.BOLD, 11));
-        typeBadge.setPreferredSize(new Dimension(80, 24));
-        typeBadge.setBorder(new EmptyBorder(2, 4, 2, 4));
+
+        typeBadge.setPreferredSize(new Dimension(90, 24));
+        typeBadge.setMinimumSize(new Dimension(90, 24));
+        typeBadge.setMaximumSize(new Dimension(90, 24));
+
+        typeBadge.setBorder(new EmptyBorder(2, 6, 2, 6));
 
         switch (t.type) {
             case "Deposit"  -> typeBadge.setBackground(GREEN_BADGE);
@@ -113,13 +117,52 @@ public class DashboardPanel extends JPanel {
             default         -> typeBadge.setBackground(BLUE_BADGE);
         }
 
-        JPanel badgeWrap = new JPanel(new GridBagLayout());
+        JPanel badgeWrap = new JPanel(new BorderLayout());
         badgeWrap.setOpaque(false);
-        badgeWrap.add(typeBadge);
+        badgeWrap.setPreferredSize(new Dimension(95, 24)); // fixed width
+        badgeWrap.setMinimumSize(new Dimension(95, 24));
+        badgeWrap.setMaximumSize(new Dimension(95, 24));
+
+        badgeWrap.add(typeBadge, BorderLayout.CENTER);
 
         // Amount
-        JLabel amtLabel = new JLabel("₱" + String.format("%,.2f", t.amount));
-        amtLabel.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        String sign = "";
+
+        switch (t.type) {
+
+            case "Deposit":
+                sign = "+";
+                break;
+
+            case "Withdraw":
+            case "Delete":
+                sign = "-";
+                break;
+
+            default:
+                sign = "";
+        }
+
+        JLabel amtLabel =
+                new JLabel(sign + "₱" +
+                        String.format("%,.2f", t.amount));
+
+        amtLabel.setFont(
+                new Font("Segoe UI", Font.BOLD, 13));
+
+        if (t.type.equals("Deposit")) {
+
+            amtLabel.setForeground(new Color(50,160,80));
+
+        }
+        else if (
+                t.type.equals("Withdraw")
+                        || t.type.equals("Delete")
+        ) {
+
+            amtLabel.setForeground(new Color(210,70,60));
+
+        }
 
         // Assemble
         JPanel left = new JPanel(new BorderLayout(8, 0));
@@ -127,9 +170,28 @@ public class DashboardPanel extends JPanel {
         left.add(logoLabel,  BorderLayout.WEST);
         left.add(textPanel,  BorderLayout.CENTER);
 
-        card.add(left,       BorderLayout.WEST);
-        card.add(badgeWrap,  BorderLayout.CENTER);
-        card.add(amtLabel,   BorderLayout.EAST);
+        JPanel middle = new JPanel(new BorderLayout());
+        middle.setOpaque(false);
+
+        middle.add(badgeWrap, BorderLayout.WEST);
+
+        card.add(left, BorderLayout.WEST);
+        card.add(middle, BorderLayout.CENTER);
+        amtLabel.setHorizontalAlignment(JLabel.RIGHT);
+
+        JPanel amtWrap =
+                new JPanel(new BorderLayout());
+
+        amtWrap.setOpaque(false);
+
+        amtWrap.setPreferredSize(
+                new Dimension(110, 24));
+
+        amtWrap.add(
+                amtLabel,
+                BorderLayout.EAST);
+
+        card.add(amtWrap, BorderLayout.EAST);
 
         return card;
     }
