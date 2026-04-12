@@ -8,8 +8,8 @@ public class Main extends JFrame {
     public Main() {
         setTitle("Financial Tracker");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1000, 600);
-        setMinimumSize(new Dimension(900, 550));
+        setSize(1120, 600);
+        setResizable(false);
         setLocationRelativeTo(null);
 
         JTabbedPane tabs = new JTabbedPane(JTabbedPane.LEFT);
