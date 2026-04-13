@@ -8,7 +8,7 @@ import javax.swing.ImageIcon;
  * This is an account
  * It Extends the original account model with display name and logo.
  */
-public class BankAccount {
+public class BankAccount implements java.io.Serializable {
 
     public String bankName;
     public double balance;

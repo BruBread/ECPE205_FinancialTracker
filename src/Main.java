@@ -1,5 +1,8 @@
 import UI.AccountsPanel;
 import UI.DashboardPanel;
+import Data_backend.AccountManager;
+import UI.HelpPanel;
+import UI.SettingsPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,8 +19,8 @@ public class Main extends JFrame {
         JTabbedPane tabs = new JTabbedPane(JTabbedPane.LEFT);
         tabs.addTab("Dashboard", new DashboardPanel());
         tabs.addTab("Accounts", new AccountsPanel());
-        tabs.addTab("Settings",  emptyPanel("Settings"));
-        tabs.addTab("Help",      emptyPanel("Help"));
+        tabs.addTab("Settings", new SettingsPanel());
+        tabs.addTab("Help", new HelpPanel());
 
         styleTabs(tabs);
         add(tabs);
@@ -106,6 +109,7 @@ public class Main extends JFrame {
 
 
     public static void main(String[] args) {
+        AccountManager.loadData();
         SwingUtilities.invokeLater(() -> new Main().setVisible(true));
     }
 }

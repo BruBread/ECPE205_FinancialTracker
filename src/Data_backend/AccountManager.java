@@ -3,12 +3,69 @@ package Data_backend;
 import java.util.ArrayList;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.io.*;
 
 /**
  * This is the data manager, it handles everything
  * I hate u harley
  */
 public class AccountManager {
+
+    private static final String SAVE_FILE = "financial_data.dat";
+
+    public static void saveData(){
+
+        try{
+
+            ObjectOutputStream out =
+                    new ObjectOutputStream(
+
+                            new FileOutputStream(SAVE_FILE)
+
+                    );
+
+            out.writeObject(accounts);
+
+            out.writeObject(transactions);
+
+            out.close();
+
+        }
+        catch(Exception e){
+
+            e.printStackTrace();
+
+        }
+
+    }
+
+    public static void loadData(){
+
+        try{
+
+            ObjectInputStream in =
+                    new ObjectInputStream(
+
+                            new FileInputStream(SAVE_FILE)
+
+                    );
+
+            accounts =
+                    (ArrayList<BankAccount>) in.readObject();
+
+            transactions =
+                    (ArrayList<Transaction>) in.readObject();
+
+            in.close();
+
+        }
+        catch(Exception e){
+
+            System.out.println("No previous save found");
+
+        }
+
+    }
 
     public static ArrayList<BankAccount>  accounts     = new ArrayList<>();
     public static ArrayList<Transaction>  transactions = new ArrayList<>();
@@ -26,6 +83,7 @@ public class AccountManager {
         log(acc.bankName, "Deposit", acc.balance, acc.logo);
 
         notifyListeners();
+        saveData();
     }
     public static boolean accountExists(String name){
 
@@ -91,6 +149,7 @@ public class AccountManager {
         }
 
         notifyListeners();
+        saveData();
     }
 
     public static void deleteAccount(BankAccount acc) {
@@ -100,6 +159,7 @@ public class AccountManager {
         log(acc.bankName, "Delete", acc.balance, acc.logo);
 
         notifyListeners();
+        saveData();
     }
 
     public static double totalAssets() {
