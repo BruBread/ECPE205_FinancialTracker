@@ -1,6 +1,6 @@
 import UI.AccountsPanel;
 import UI.DashboardPanel;
-
+import Data_backend.AccountManager;
 import javax.swing.*;
 import java.awt.*;
 
@@ -106,6 +106,7 @@ public class Main extends JFrame {
 
 
     public static void main(String[] args) {
+        AccountManager.loadData();
         SwingUtilities.invokeLater(() -> new Main().setVisible(true));
     }
 }

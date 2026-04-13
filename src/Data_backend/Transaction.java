@@ -5,7 +5,7 @@ import javax.swing.ImageIcon;
 /**
  * Transactions have different types: "Deposit", "Edit", "Withdraw", "Delete"
  */
-public class Transaction {
+public class Transaction implements java.io.Serializable {
 
     public String    bank;
     public String    type;
