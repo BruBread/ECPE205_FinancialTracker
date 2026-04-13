@@ -231,14 +231,34 @@ public class AddAccountDialog extends JDialog {
                     new BankAccount(name,balance,logo)
             );
         }else {
+
+            boolean nameChanged =
+                    !editing.bankName.equalsIgnoreCase(name);
+
+            // prevent duplicate names when editing
+            if(nameChanged && AccountManager.accountExists(name)){
+
+                JOptionPane.showMessageDialog(
+
+                        this,
+
+                        "Another account already uses this name."
+
+                );
+
+                return;
+            }
+
             boolean changed =
                     !editing.bankName.equals(name)
                             || editing.balance != balance
                             || !java.util.Objects.equals(editing.logo, logo);
+
             if(!changed){
-                dispose(); // close dialog but do nothing
+                dispose();
                 return;
             }
+
             double oldBalance = editing.balance;
 
             String oldName = editing.bankName;
