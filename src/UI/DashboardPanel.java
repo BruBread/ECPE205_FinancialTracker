@@ -34,7 +34,7 @@ public class DashboardPanel extends JPanel {
                         rightPanel()
                 );
 
-        split.setDividerLocation(520); // width of Transaction History
+        split.setDividerLocation(520); // width of Activity History
         split.setDividerSize(0);       // hides divider line
         split.setBorder(null);
 
@@ -42,7 +42,10 @@ public class DashboardPanel extends JPanel {
 
         add(split, BorderLayout.CENTER);
 
+        AccountManager.addListener(this::refreshAll);
+
         refreshAll();
+
     }
 
     // LEFT PANEL
@@ -58,7 +61,7 @@ public class DashboardPanel extends JPanel {
                 new EmptyBorder(0,0,0,0)
         ));
 
-        JLabel header = new JLabel("   Transaction History");
+        JLabel header = new JLabel("   Activity History");
         header.setFont(new Font("Segoe UI",Font.BOLD,14));
         header.setPreferredSize(new Dimension(0,42));
         header.setBorder(BorderFactory.createMatteBorder(0,0,1,0,BORDER_GRAY));
@@ -141,10 +144,29 @@ public class DashboardPanel extends JPanel {
         typeBadge.setBorder(new EmptyBorder(2,6,2,6));
 
         switch(t.type){
-            case "Deposit"  -> typeBadge.setBackground(GREEN_BADGE);
-            case "Withdraw" -> typeBadge.setBackground(RED_BADGE);
-            case "Delete"   -> typeBadge.setBackground(RED_BADGE);
-            default -> typeBadge.setBackground(BLUE_BADGE);
+
+            case "Account updated" ->
+                    typeBadge.setBackground(
+                            new Color(90,120,160)
+                    );
+
+            case "Deposit" ->
+                    typeBadge.setBackground(GREEN_BADGE);
+
+            case "Withdraw" ->
+                    typeBadge.setBackground(RED_BADGE);
+
+            case "Delete" ->
+                    typeBadge.setBackground(RED_BADGE);
+
+            case "Name changed" ->
+                    typeBadge.setBackground(BLUE_BADGE);
+
+            case "Logo updated" ->
+                    typeBadge.setBackground(new Color(120,120,120));
+
+            default ->
+                    typeBadge.setBackground(BLUE_BADGE);
         }
 
         JPanel badgeWrap = new JPanel(new BorderLayout());
@@ -154,12 +176,27 @@ public class DashboardPanel extends JPanel {
         badgeWrap.add(typeBadge,BorderLayout.CENTER);
 
         String sign="";
+
         if(t.type.equals("Deposit")) sign="+";
+
         if(t.type.equals("Withdraw") || t.type.equals("Delete")) sign="-";
 
-        JLabel amtLabel = new JLabel(
-                shortenCurrency(sign+"₱"+String.format("%,.2f",t.amount), 16)
-        );
+        if(
+                t.type.equals("Name changed")
+                        || t.type.equals("Logo updated")
+        )
+
+            sign="";
+
+        String amountText = "";
+
+        if(t.amount > 0)
+
+            amountText =
+                    sign+"₱"+String.format("%,.2f",t.amount);
+
+        JLabel amtLabel =
+                new JLabel(shortenCurrency(amountText, 16));
         amtLabel.setFont(new Font("Segoe UI",Font.BOLD,13));
         amtLabel.setForeground(sign.equals("+") ? new Color(50,160,80) : new Color(210,70,60));
         amtLabel.setHorizontalAlignment(JLabel.RIGHT);
@@ -305,6 +342,7 @@ public class DashboardPanel extends JPanel {
         editBtn.addActionListener(e->{
             new AddAccountDialog((JFrame)SwingUtilities.getWindowAncestor(this),acc);
             refreshAll();
+            AccountManager.addListener(this::refreshAll);
         });
 
         card.addMouseListener(new java.awt.event.MouseAdapter(){
@@ -372,4 +410,5 @@ public class DashboardPanel extends JPanel {
         revalidate();
         repaint();
     }
+
 }
