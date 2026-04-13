@@ -198,6 +198,12 @@ public class AddAccountDialog extends JDialog {
         }
 
         if(editing==null){
+
+            if(AccountManager.accountExists(name)){
+                JOptionPane.showMessageDialog(this,"Account already exists.");
+                return;
+            }
+
             AccountManager.addAccount(
                     new BankAccount(name,balance,logo)
             );
@@ -205,7 +211,7 @@ public class AddAccountDialog extends JDialog {
             boolean changed =
                     !editing.bankName.equals(name)
                             || editing.balance != balance
-                            || editing.logo != logo;
+                            || !java.util.Objects.equals(editing.logo, logo);
             if(!changed){
                 dispose(); // close dialog but do nothing
                 return;
