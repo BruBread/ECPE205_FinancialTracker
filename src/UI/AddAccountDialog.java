@@ -88,25 +88,48 @@ public class AddAccountDialog extends JDialog {
 
     private JPanel buttonPanel(){
 
-        JPanel p = new JPanel(new GridLayout(1,2,8,0));
+        JPanel p;
 
-        saveBtn = new JButton(editing==null ? "Add" : "Save");
+        if(editing == null)
+
+            p = new JPanel(new GridLayout(1,1));
+
+        else
+
+            p = new JPanel(new GridLayout(1,2,8,0));
+
+
+        saveBtn =
+                new JButton(editing==null ? "Add" : "Save");
+
 
         saveBtn.setBackground(new Color(30,110,50));
+
         saveBtn.setForeground(Color.WHITE);
+
         saveBtn.setFocusPainted(false);
+
         saveBtn.addActionListener(e -> save());
 
-        JButton deleteBtn = new JButton("Delete");
-
-        deleteBtn.setBackground(new Color(200,60,60));
-        deleteBtn.setForeground(Color.WHITE);
-        deleteBtn.setFocusPainted(false);
-        deleteBtn.setEnabled(editing!=null);
-        deleteBtn.addActionListener(e -> delete());
 
         p.add(saveBtn);
-        p.add(deleteBtn);
+
+
+        if(editing != null){
+
+            JButton deleteBtn =
+                    new JButton("Delete");
+
+            deleteBtn.setBackground(new Color(200,60,60));
+
+            deleteBtn.setForeground(Color.WHITE);
+
+            deleteBtn.setFocusPainted(false);
+
+            deleteBtn.addActionListener(e -> delete());
+
+            p.add(deleteBtn);
+        }
 
         return p;
     }
@@ -217,10 +240,26 @@ public class AddAccountDialog extends JDialog {
                 return;
             }
             double oldBalance = editing.balance;
+
+            String oldName = editing.bankName;
+
+            ImageIcon oldLogo = editing.logo;
+
             editing.bankName = name;
             editing.balance = balance;
             editing.logo = logo;
-            AccountManager.updateAccount(editing, oldBalance);
+
+            AccountManager.updateAccount(
+
+                    editing,
+
+                    oldBalance,
+
+                    oldName,
+
+                    oldLogo
+
+            );
         }
         dispose();
     }
