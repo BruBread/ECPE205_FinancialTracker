@@ -13,6 +13,29 @@ public class AccountManager {
 
     private static final String SAVE_FILE = "financial_data.dat";
 
+    public static void resetData(){
+
+        accounts.clear();
+
+        transactions.clear();
+
+        try{
+
+            java.io.File file =
+                    new java.io.File("financial_data.dat");
+
+            if(file.exists())
+                file.delete();
+
+        }catch(Exception e){
+
+            e.printStackTrace();
+
+        }
+
+        notifyListeners();
+    }
+
     public static void saveData(){
 
         try{

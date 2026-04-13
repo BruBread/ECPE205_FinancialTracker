@@ -3,6 +3,7 @@ package UI;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import Data_backend.AccountManager;
 
 public class SettingsPanel extends JPanel {
 
@@ -131,6 +132,54 @@ public class SettingsPanel extends JPanel {
 
         JButton reset =
                 new JButton("Reset Data");
+
+        reset.setBackground(
+                new Color(200,60,60)
+        );
+
+        reset.setForeground(Color.WHITE);
+
+        reset.setFocusPainted(false);
+
+        reset.setBorder(
+                new EmptyBorder(8,14,8,14)
+        );
+
+        reset.setCursor(
+                new Cursor(Cursor.HAND_CURSOR)
+        );
+
+        reset.addActionListener(e -> {
+
+            int confirm =
+                    JOptionPane.showConfirmDialog(
+
+                            this,
+
+                            "Delete all accounts and activity history?",
+
+                            "Reset Data",
+
+                            JOptionPane.YES_NO_OPTION
+
+                    );
+
+            if(confirm == JOptionPane.YES_OPTION){
+
+                AccountManager.resetData();
+
+                JOptionPane.showMessageDialog(
+
+                        this,
+
+                        "All data has been reset."
+
+                );
+
+            }
+
+        });
+
 
         reset.setBackground(
                 new Color(200,60,60)
