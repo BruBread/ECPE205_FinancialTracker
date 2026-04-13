@@ -1,34 +1,15 @@
-### IntelliJ IDEA ###
+# IntelliJ user files
+.idea/workspace.xml
+.idea/shelf/
+.idea/tasks.xml
+
+# build output
 out/
-!**/src/main/**/out/
-!**/src/test/**/out/
-.kotlin
 
-### Eclipse ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
+# local saved data
+financial_data.dat
+*.dat
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-
-### VS Code ###
-.vscode/
-
-### Mac OS ###
+# OS files
 .DS_Store
-
-.idea/
-*.iml/
-out/
+Thumbs.db
