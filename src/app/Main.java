@@ -1,3 +1,5 @@
+package app;
+
 import UI.AccountsPanel;
 import UI.DashboardPanel;
 import Data_backend.AccountManager;
