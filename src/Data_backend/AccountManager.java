@@ -20,8 +20,12 @@ public class AccountManager {
 
     // Add, Update, Delete Logics here
     public static void addAccount(BankAccount acc) {
+
         accounts.add(acc);
+
         log(acc.bankName, "Deposit", acc.balance, acc.logo);
+
+        notifyListeners();
     }
     public static boolean accountExists(String name){
 
@@ -34,25 +38,68 @@ public class AccountManager {
         return false;
     }
 
-    public static void updateAccount(BankAccount acc, double oldBalance) {
+    public static void updateAccount(
 
-        if(acc.balance == oldBalance){
-            log(acc.bankName, "Edit", 0, acc.logo);
-            return;
+            BankAccount acc,
+
+            double oldBalance,
+
+            String oldName,
+
+            javax.swing.ImageIcon oldLogo
+
+    ) {
+
+        boolean nameChanged =
+                !oldName.equals(acc.bankName);
+
+        boolean logoChanged =
+                !java.util.Objects.equals(oldLogo, acc.logo);
+
+        boolean balanceChanged =
+                acc.balance != oldBalance;
+
+
+        // group name + logo change into one event
+        if(nameChanged || logoChanged)
+
+            log(acc.bankName,
+                    "Account updated",
+                    0,
+                    acc.logo);
+
+
+        if(balanceChanged){
+
+            double diff =
+                    acc.balance - oldBalance;
+
+            log(
+
+                    acc.bankName,
+
+                    diff >= 0
+                            ? "Deposit"
+                            : "Withdraw",
+
+                    Math.abs(diff),
+
+                    acc.logo
+
+            );
+
         }
 
-        double diff = acc.balance - oldBalance;
-
-        log(
-                acc.bankName,
-                diff >= 0 ? "Deposit" : "Withdraw",
-                Math.abs(diff),
-                acc.logo
-        );
+        notifyListeners();
     }
+
     public static void deleteAccount(BankAccount acc) {
+
         accounts.remove(acc);
+
         log(acc.bankName, "Delete", acc.balance, acc.logo);
+
+        notifyListeners();
     }
 
     public static double totalAssets() {
@@ -64,5 +111,18 @@ public class AccountManager {
     // Returns current date lol
     private static String today() {
         return LocalDate.now().format(DateTimeFormatter.ofPattern("dd MMMM yyyy"));
+    }
+
+    private static final java.util.List<Runnable> listeners = new java.util.ArrayList<>();
+
+    public static void addListener(Runnable r){
+        listeners.add(r);
+    }
+
+    private static void notifyListeners(){
+
+        for(Runnable r : listeners)
+
+            r.run();
     }
 }
