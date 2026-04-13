@@ -1,3 +1,4 @@
+import UI.AccountsPanel;
 import UI.DashboardPanel;
 
 import javax.swing.*;
@@ -14,7 +15,7 @@ public class Main extends JFrame {
 
         JTabbedPane tabs = new JTabbedPane(JTabbedPane.LEFT);
         tabs.addTab("Dashboard", new DashboardPanel());
-        tabs.addTab("Accounts",  emptyPanel("Accounts"));
+        tabs.addTab("Accounts", new AccountsPanel());
         tabs.addTab("Settings",  emptyPanel("Settings"));
         tabs.addTab("Help",      emptyPanel("Help"));
 
