@@ -280,12 +280,17 @@ public class DashboardPanel extends JPanel {
             logoLabel.setIcon(new ImageIcon(acc.logo.getImage()
                     .getScaledInstance(48,48,Image.SCALE_SMOOTH)));
         else{
-            logoLabel.setText(acc.bankName.substring(0,Math.min(2,acc.bankName.length())));
+            String initials =
+                    (acc.bankName == null || acc.bankName.isBlank())
+                            ? "?"
+                            : acc.bankName.substring(0, Math.min(2, acc.bankName.length()));
+
+            logoLabel.setText(initials);
             logoLabel.setFont(new Font("Segoe UI",Font.BOLD,18));
             logoLabel.setForeground(new Color(80,80,80));
         }
 
-        JLabel balLabel = new JLabel("₱"+String.format("%,.0f",acc.balance),JLabel.CENTER);
+        JLabel balLabel = new JLabel("₱"+String.format("%,.2f",acc.balance),JLabel.CENTER);
         balLabel.setFont(new Font("Segoe UI",Font.BOLD,14));
         balLabel.setForeground(new Color(60,60,60));
 
