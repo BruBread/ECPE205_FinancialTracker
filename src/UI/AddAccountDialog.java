@@ -5,6 +5,9 @@ import Data_backend.BankAccount;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.plaf.basic.BasicComboBoxUI;
+import javax.swing.plaf.basic.BasicComboPopup;
+import javax.swing.plaf.basic.ComboPopup;
 import java.awt.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -51,7 +54,9 @@ public class AddAccountDialog extends JDialog {
 
         JPanel root = new JPanel(new BorderLayout(10,10));
         root.setBorder(new EmptyBorder(16,16,16,16));
+        root.setBackground(ThemeManager.card());
         setContentPane(root);
+        getContentPane().setBackground(ThemeManager.card());
 
         root.add(formPanel(),BorderLayout.CENTER);
         root.add(buttonPanel(),BorderLayout.SOUTH);
@@ -62,12 +67,26 @@ public class AddAccountDialog extends JDialog {
     private JPanel formPanel(){
 
         JPanel p = new JPanel(new GridLayout(0,1,6,6));
+        p.setBackground(ThemeManager.card());
 
         preview.setPreferredSize(new Dimension(60,60));
-        preview.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+        preview.setBorder(BorderFactory.createLineBorder(ThemeManager.cardBorder()));
+        preview.setForeground(ThemeManager.text());
+        preview.setBackground(ThemeManager.card());
+        preview.setOpaque(true);
 
         JButton uploadBtn = new JButton("Upload Logo");
         uploadBtn.addActionListener(e->chooseImage());
+        styleButton(uploadBtn);
+
+        // ── nameField: was missing all dark-mode styling ──────────
+        styleTextField(nameField);
+
+        // ── balanceField ──────────────────────────────────────────
+        styleTextField(balanceField);
+
+        // ── presetDropdown: fix invisible arrow + blue highlight ──
+        styleDarkComboBox(presetDropdown);
 
         p.add(label("Choose a preset / create a new Bank"));
         p.add(presetDropdown);
@@ -82,6 +101,136 @@ public class AddAccountDialog extends JDialog {
         p.add(preview);
 
         return p;
+    }
+
+    /** Applies consistent dark-mode-aware styling to a JTextField. */
+    private void styleTextField(JTextField field) {
+        Color fieldBg = ThemeManager.isDark() ? new Color(50,50,50) : new Color(245,245,245);
+        Color accent  = ThemeManager.isDark() ? new Color(80,160,100) : new Color(70,120,200);
+        field.setBackground(fieldBg);
+        field.setForeground(ThemeManager.text());
+        field.setCaretColor(ThemeManager.text());
+        // Use a simple line border; remove the JTextField's default blue focus ring
+        field.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(ThemeManager.cardBorder()),
+                new EmptyBorder(4,6,4,6)));
+        // Replace focus highlight with a theme-aware green ring instead of bright blue
+        field.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override public void focusGained(java.awt.event.FocusEvent e) {
+                field.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(accent, 2),
+                        new EmptyBorder(3,5,3,5)));
+            }
+            @Override public void focusLost(java.awt.event.FocusEvent e) {
+                field.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(ThemeManager.cardBorder()),
+                        new EmptyBorder(4,6,4,6)));
+            }
+        });
+    }
+
+    /** Styles the Upload Logo button to match dark/light theme. */
+    private void styleButton(JButton btn) {
+        btn.setBackground(ThemeManager.isDark() ? new Color(50,50,50) : new Color(245,245,245));
+        btn.setForeground(ThemeManager.text());
+        btn.setFocusPainted(false);
+        btn.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(ThemeManager.cardBorder()),
+                new EmptyBorder(4,8,4,8)));
+    }
+
+    /**
+     * Applies a fully dark-themed UI to JComboBox:
+     *  - Dark background / foreground on the button and list
+     *  - Visible arrow rendered in light gray (so it shows on dark bg)
+     *  - Green focus ring instead of the default bright blue
+     */
+    private void styleDarkComboBox(JComboBox<String> combo) {
+        boolean dark = ThemeManager.isDark();
+        Color fieldBg = dark ? new Color(50,50,50) : Color.WHITE;
+        Color arrowFg = dark ? new Color(200,200,200) : new Color(60,60,60);
+        Color accent  = dark ? new Color(80,160,100) : new Color(70,120,200);
+
+        combo.setBackground(fieldBg);
+        combo.setForeground(ThemeManager.text());
+        combo.setFocusable(true);
+
+        combo.setUI(new BasicComboBoxUI() {
+
+            // ── Replace the arrow button with a hand-drawn dark one ──
+            @Override
+            protected JButton createArrowButton() {
+                JButton btn = new JButton() {
+                    @Override
+                    protected void paintComponent(Graphics g) {
+                        Graphics2D g2 = (Graphics2D) g.create();
+                        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                                RenderingHints.VALUE_ANTIALIAS_ON);
+                        // background matches field
+                        g2.setColor(fieldBg);
+                        g2.fillRect(0, 0, getWidth(), getHeight());
+                        // separator line on left
+                        g2.setColor(ThemeManager.cardBorder());
+                        g2.drawLine(0, 2, 0, getHeight()-2);
+                        // downward triangle in visible color
+                        int cx = getWidth()/2, cy = getHeight()/2;
+                        int[] xs = {cx-4, cx+4, cx};
+                        int[] ys = {cy-2, cy-2, cy+3};
+                        g2.setColor(arrowFg);
+                        g2.fillPolygon(xs, ys, 3);
+                        g2.dispose();
+                    }
+                };
+                btn.setBorderPainted(false);
+                btn.setContentAreaFilled(false);
+                btn.setFocusPainted(false);
+                return btn;
+            }
+
+            // ── Outer combo border (line + padding) ──────────────────
+            @Override
+            public void installUI(JComponent c) {
+                super.installUI(c);
+                combo.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(ThemeManager.cardBorder()),
+                        new EmptyBorder(2,4,2,4)));
+            }
+
+            // ── Style the drop-down popup list ────────────────────────
+            @Override
+            protected ComboPopup createPopup() {
+                BasicComboPopup popup = new BasicComboPopup((JComboBox) combo) {
+                    @Override
+                    protected void configureList() {
+                        super.configureList();
+                        list.setBackground(fieldBg);
+                        list.setForeground(ThemeManager.text());
+                        list.setSelectionBackground(accent);
+                        list.setSelectionForeground(Color.WHITE);
+                    }
+                };
+                popup.getList().setBackground(fieldBg);
+                popup.getList().setForeground(ThemeManager.text());
+                popup.getList().setSelectionBackground(accent);
+                popup.getList().setSelectionForeground(Color.WHITE);
+                popup.setBorder(BorderFactory.createLineBorder(ThemeManager.cardBorder()));
+                return popup;
+            }
+        });
+
+        // Green focus ring (replaces the default blue outline)
+        combo.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override public void focusGained(java.awt.event.FocusEvent e) {
+                combo.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(accent, 2),
+                        new EmptyBorder(1,3,1,3)));
+            }
+            @Override public void focusLost(java.awt.event.FocusEvent e) {
+                combo.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(ThemeManager.cardBorder()),
+                        new EmptyBorder(2,4,2,4)));
+            }
+        });
     }
 
     private JButton saveBtn;
@@ -316,7 +465,7 @@ public class AddAccountDialog extends JDialog {
 
         JLabel l = new JLabel(text);
         l.setFont(new Font("Segoe UI",Font.BOLD,12));
-
+        l.setForeground(ThemeManager.text());
         return l;
     }
 }

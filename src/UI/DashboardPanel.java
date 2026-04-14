@@ -16,8 +16,8 @@ public class DashboardPanel extends JPanel {
     private JLabel totalLabel;
 
     private static final Color GREEN_CARD  = new Color(50,170,80);
-    private static final Color BG_WHITE    = Color.WHITE;
-    private static final Color BORDER_GRAY = new Color(225,225,225);
+//    private static final Color BG_WHITE    = Color.WHITE;
+//    private static final Color BORDER_GRAY = new Color(225,225,225);
     private static final Color RED_BADGE   = new Color(210,70,60);
     private static final Color GREEN_BADGE = new Color(50,160,80);
     private static final Color BLUE_BADGE  = new Color(70,120,200);
@@ -25,7 +25,7 @@ public class DashboardPanel extends JPanel {
     public DashboardPanel() {
         setLayout(new BorderLayout(20,20));
         setBorder(new EmptyBorder(20,20,20,20));
-        setBackground(new Color(242,244,247));
+//        setBackground(new Color(242,244,247));
 
         JSplitPane split =
                 new JSplitPane(
@@ -36,13 +36,22 @@ public class DashboardPanel extends JPanel {
 
         split.setDividerLocation(520); // width of Activity History
         split.setDividerSize(0);       // hides divider line
+
         split.setBorder(null);
+        split.setBackground(ThemeManager.bg());
+        split.setOpaque(true);
+        ThemeManager.addListener(() -> {
+            setBackground(ThemeManager.bg());
+            split.setBackground(ThemeManager.bg());
+            split.repaint();
+        });
 
         split.setResizeWeight(0.45);
 
         add(split, BorderLayout.CENTER);
 
         AccountManager.addListener(this::refreshAll);
+        ThemeManager.addListener(this::refreshAll);
 
         refreshAll();
 
@@ -54,25 +63,50 @@ public class DashboardPanel extends JPanel {
 
         JPanel panel = new JPanel(new BorderLayout());
         panel.setPreferredSize(new Dimension(380,0));
-        panel.setBackground(BG_WHITE);
 
-        panel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(BORDER_GRAY),
-                new EmptyBorder(0,0,0,0)
-        ));
+
+//        panel.setBackground(BG_WHITE);
+//        panel.setBorder(BorderFactory.createCompoundBorder(
+//                BorderFactory.createLineBorder(BORDER_GRAY),
+//                new EmptyBorder(0,0,0,0)
+//        ));
+        panel.setBackground(ThemeManager.card());
+        ThemeManager.addListener(() ->{
+            panel.setBackground(ThemeManager.card());
+            panel.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(ThemeManager.cardBorder()),
+                    new EmptyBorder(0,0,0,0)
+            ));
+                });
+        BorderFactory.createLineBorder(ThemeManager.cardBorder());
 
         JLabel header = new JLabel("   Activity History");
         header.setFont(new Font("Segoe UI",Font.BOLD,14));
         header.setPreferredSize(new Dimension(0,42));
-        header.setBorder(BorderFactory.createMatteBorder(0,0,1,0,BORDER_GRAY));
+//        header.setBorder(BorderFactory.createMatteBorder(0,0,1,0,BORDER_GRAY));
+        header.setForeground(ThemeManager.text());
+        header.setBorder(BorderFactory.createMatteBorder(0,0,1,0, ThemeManager.cardBorder()));
+        ThemeManager.addListener(() -> {
+            header.setForeground(ThemeManager.text());
+            header.setBorder(BorderFactory.createMatteBorder(0,0,1,0, ThemeManager.cardBorder()));
+        });
 
         panel.add(header,BorderLayout.NORTH);
 
         transactionList = new JPanel();
         transactionList.setLayout(new BoxLayout(transactionList,BoxLayout.Y_AXIS));
-        transactionList.setBackground(BG_WHITE);
+//        transactionList.setBackground(BG_WHITE);
+        transactionList.setBackground(ThemeManager.card());
+        ThemeManager.addListener(() -> {
+            transactionList.setBackground(ThemeManager.card());
+        });
 
         JScrollPane scroll = new JScrollPane(transactionList);
+        scroll.setBackground(ThemeManager.card());
+        ThemeManager.addListener(() -> {
+           scroll.setBackground(ThemeManager.card());
+           scroll.getViewport().setBackground(ThemeManager.card());
+        });
         scroll.setBorder(null);
         scroll.getVerticalScrollBar().setUnitIncrement(12);
 
@@ -96,10 +130,11 @@ public class DashboardPanel extends JPanel {
         JPanel card = new JPanel(new BorderLayout());
         card.setLayout(new BorderLayout(8,0));
         card.setMaximumSize(new Dimension(Integer.MAX_VALUE,64));
-        card.setBackground(BG_WHITE);
+//        card.setBackground(BG_WHITE);
+        card.setBackground(ThemeManager.card());
 
         card.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0,0,1,0,BORDER_GRAY),
+                BorderFactory.createMatteBorder(0,0,1,0,ThemeManager.cardBorder()),
                 new EmptyBorder(10,12,10,12)
         ));
 
@@ -107,6 +142,7 @@ public class DashboardPanel extends JPanel {
         card.setMaximumSize(new Dimension(Integer.MAX_VALUE,64));
 
         JLabel logoLabel = new JLabel();
+        logoLabel.setForeground(ThemeManager.text());
         logoLabel.setPreferredSize(new Dimension(38,38));
         logoLabel.setHorizontalAlignment(JLabel.CENTER);
 
@@ -119,6 +155,7 @@ public class DashboardPanel extends JPanel {
         }
 
         JLabel nameLabel = new JLabel(shorten(t.bank,22));
+        nameLabel.setForeground(ThemeManager.text());
         nameLabel.setHorizontalAlignment(JLabel.LEFT);
         nameLabel.setPreferredSize(new Dimension(140,18));
         nameLabel.setFont(new Font("Segoe UI",Font.BOLD,13));
@@ -126,7 +163,7 @@ public class DashboardPanel extends JPanel {
 
         JLabel dateLabel = new JLabel(t.date);
         dateLabel.setFont(new Font("Segoe UI",Font.PLAIN,11));
-        dateLabel.setForeground(Color.GRAY);
+        dateLabel.setForeground(ThemeManager.subtext());
 
         JPanel textPanel = new JPanel(new GridLayout(2,1));
         textPanel.setPreferredSize(new Dimension(140,36));
@@ -263,14 +300,23 @@ public class DashboardPanel extends JPanel {
     private JPanel bankArea(){
 
         JPanel wrapper = new JPanel(new BorderLayout());
-        wrapper.setBackground(BG_WHITE);
+        wrapper.setBackground(ThemeManager.card());
 
         wrapper.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(BORDER_GRAY),
+                BorderFactory.createLineBorder(ThemeManager.cardBorder()),
                 new EmptyBorder(12,12,12,12)
         ));
 
+        ThemeManager.addListener(() -> {
+            wrapper.setBackground(ThemeManager.card());
+            wrapper.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(ThemeManager.cardBorder()), new EmptyBorder(12,12,12,12)));
+        });
+
         JLabel header = new JLabel("Accounts");
+        header.setForeground(ThemeManager.text());
+        ThemeManager.addListener(() -> {
+            header.setForeground(ThemeManager.text());
+        });
         header.setFont(new Font("Segoe UI",Font.BOLD,14));
         header.setBorder(new EmptyBorder(0,0,10,0));
 
@@ -290,6 +336,13 @@ public class DashboardPanel extends JPanel {
         container.add(bankGrid,gbc);
 
         JScrollPane scroll = new JScrollPane(container);
+        scroll.setBackground(ThemeManager.card());
+        scroll.getViewport().setBackground(ThemeManager.card());
+        ThemeManager.addListener(() -> {
+            scroll.setBackground(ThemeManager.card());
+            scroll.getViewport().setBackground(ThemeManager.card());
+        });
+
         scroll.setBorder(null);
         scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -304,10 +357,18 @@ public class DashboardPanel extends JPanel {
 
         JPanel card = new JPanel(new BorderLayout(0,8));
         card.setPreferredSize(new Dimension(130,130));
-        card.setBackground(Color.WHITE);
+//        card.setBackground(Color.WHITE);
+        card.setBackground(ThemeManager.card());
 
-        Border normalBorder = BorderFactory.createLineBorder(new Color(225,225,225),1,true);
-        Border hoverBorder  = BorderFactory.createLineBorder(new Color(170,190,180),1,true);
+//        Border normalBorder = BorderFactory.createLineBorder(new Color(225,225,225),1,true);
+//        Border hoverBorder  = BorderFactory.createLineBorder(new Color(170,190,180),1,true);
+        Border normalBorder = BorderFactory.createLineBorder(ThemeManager.cardBorder(),1,true);
+        Border hoverBorder  = BorderFactory.createLineBorder(ThemeManager.hover(),1,true);
+        ThemeManager.addListener(() -> {
+            card.setBackground(ThemeManager.card());
+            card.setBorder(BorderFactory.createLineBorder(ThemeManager.cardBorder(),1,true));
+            card.repaint();
+        });
 
         card.setBorder(normalBorder);
 
@@ -324,18 +385,36 @@ public class DashboardPanel extends JPanel {
 
             logoLabel.setText(initials);
             logoLabel.setFont(new Font("Segoe UI",Font.BOLD,18));
-            logoLabel.setForeground(new Color(80,80,80));
+//            logoLabel.setForeground(new Color(80,80,80));
+            logoLabel.setForeground(ThemeManager.text());
+            ThemeManager.addListener(() -> {
+                logoLabel.setForeground(ThemeManager.text());
+            });
         }
 
         JLabel balLabel = new JLabel("₱"+String.format("%,.2f",acc.balance),JLabel.CENTER);
         balLabel.setFont(new Font("Segoe UI",Font.BOLD,14));
-        balLabel.setForeground(new Color(60,60,60));
+//        balLabel.setForeground(new Color(60,60,60));
+        balLabel.setForeground(ThemeManager.text());
+        ThemeManager.addListener(() -> {
+            balLabel.setForeground(ThemeManager.text());
+        });
 
         JButton editBtn = new JButton("Edit");
         editBtn.setPreferredSize(new Dimension(60,24));
         editBtn.setFont(new Font("Segoe UI",Font.BOLD,11));
-        editBtn.setBackground(new Color(245,245,245));
-        editBtn.setBorder(BorderFactory.createLineBorder(new Color(220,220,220)));
+
+//        editBtn.setBackground(new Color(245,245,245));
+//        editBtn.setBorder(BorderFactory.createLineBorder(new Color(220,220,220)));
+        editBtn.setBackground(ThemeManager.isDark() ? new Color(50,50,50) : new Color(245,245,245));
+        editBtn.setForeground(ThemeManager.text());
+        editBtn.setBorder(BorderFactory.createLineBorder(ThemeManager.cardBorder()));
+        ThemeManager.addListener(() -> {
+            editBtn.setBackground(ThemeManager.isDark() ? new Color(50,50,50) : new Color(245,245,245));
+            editBtn.setForeground(ThemeManager.text());
+            editBtn.setBorder(BorderFactory.createLineBorder(ThemeManager.cardBorder()));
+        });
+
         editBtn.setFocusPainted(false);
         editBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
@@ -364,8 +443,15 @@ public class DashboardPanel extends JPanel {
 
         JPanel card = new JPanel(new BorderLayout());
         card.setPreferredSize(new Dimension(130,130));
-        card.setBackground(Color.WHITE);
-        card.setBorder(BorderFactory.createLineBorder(BORDER_GRAY,1,true));
+
+//        card.setBackground(Color.WHITE);
+//        card.setBorder(BorderFactory.createLineBorder(BORDER_GRAY,1,true));
+        card.setBackground(ThemeManager.card());
+        card.setBorder(BorderFactory.createLineBorder(ThemeManager.cardBorder(),1,true));
+        ThemeManager.addListener(() -> {
+            card.setBackground(ThemeManager.card());
+            card.setBorder(BorderFactory.createLineBorder(ThemeManager.cardBorder(),1,true));
+        });
 
         JButton addBtn = new JButton("+");
         addBtn.setFont(new Font("Segoe UI",Font.BOLD,28));
@@ -409,6 +495,9 @@ public class DashboardPanel extends JPanel {
 
         revalidate();
         repaint();
+        transactionList.setBackground(ThemeManager.card());
+        setBackground(ThemeManager.bg());
+
     }
 
 }

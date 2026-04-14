@@ -1,8 +1,5 @@
-import UI.AccountsPanel;
-import UI.DashboardPanel;
+import UI.*;
 import Data_backend.AccountManager;
-import UI.HelpPanel;
-import UI.SettingsPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -24,6 +21,12 @@ public class Main extends JFrame {
 
         styleTabs(tabs);
         add(tabs);
+        ThemeManager.addListener(() -> {
+            tabs.setBackground(new Color(30,110,50));
+            getContentPane().setBackground(ThemeManager.bg());
+            SwingUtilities.updateComponentTreeUI(this);
+            repaint();
+        });
     }
 
     JPanel emptyPanel(String title) {

@@ -6,10 +6,11 @@ import java.awt.*;
 
 public class HelpPanel extends JPanel {
 
-    private static final Color BG = new Color(242,244,247);
-    private static final Color CARD = Color.WHITE;
-    private static final Color BORDER = new Color(225,225,225);
-    private static final Color SUBTEXT = new Color(110,110,110);
+//    private static final Color BG = new Color(242,244,247);
+//    private static final Color CARD = Color.WHITE;
+//    private static final Color BORDER = new Color(225,225,225);
+//    private static final Color SUBTEXT = new Color(110,110,110);
+
 
     public HelpPanel(){
 
@@ -17,17 +18,26 @@ public class HelpPanel extends JPanel {
 
         setBorder(new EmptyBorder(20,20,20,20));
 
-        setBackground(BG);
+        applyTheme();
+        ThemeManager.addListener(this::applyTheme);
 
         add(title(), BorderLayout.NORTH);
 
         add(content(), BorderLayout.CENTER);
     }
 
+    private void applyTheme(){
+        setBackground(ThemeManager.bg());
+        repaint();
+    }
+
     private JLabel title(){
 
         JLabel label =
                 new JLabel("Help");
+
+        label.setForeground(ThemeManager.text());
+        ThemeManager.addListener(() -> label.setForeground(ThemeManager.text()));
 
         label.setFont(
                 new Font("Segoe UI", Font.BOLD, 20)
@@ -125,22 +135,21 @@ public class HelpPanel extends JPanel {
         JPanel card =
                 new JPanel(new BorderLayout());
 
-        card.setBackground(CARD);
+        card.setBackground(ThemeManager.card());
 
-        card.setBorder(
-
-                BorderFactory.createCompoundBorder(
-
-                        BorderFactory.createLineBorder(BORDER),
-
-                        new EmptyBorder(18,20,18,20)
-
-                )
-
-        );
+        card.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(ThemeManager.cardBorder()), new EmptyBorder(18,20,18,20)));
+        ThemeManager.addListener(() -> {
+            card.setBackground(ThemeManager.card());
+            card.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(ThemeManager.cardBorder()), new EmptyBorder(18,20,18,20)));
+            repaint();
+        });
 
         JLabel header =
                 new JLabel(title);
+
+        header.setForeground(ThemeManager.text());
+        ThemeManager.addListener(() -> header.setForeground(ThemeManager.text()));
+
 
         header.setFont(
                 new Font("Segoe UI", Font.BOLD, 16)
@@ -153,7 +162,8 @@ public class HelpPanel extends JPanel {
                 new Font("Segoe UI", Font.PLAIN, 13)
         );
 
-        body.setForeground(SUBTEXT);
+        body.setForeground(ThemeManager.subtext());
+        ThemeManager.addListener(() -> body.setForeground(ThemeManager.subtext()));
 
         body.setEditable(false);
 

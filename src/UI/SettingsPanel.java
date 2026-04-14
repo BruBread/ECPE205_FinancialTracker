@@ -6,8 +6,9 @@ import java.awt.*;
 
 public class SettingsPanel extends JPanel {
 
-    private static final Color BG = new Color(242,244,247);
-    private static final Color CARD_BORDER = new Color(225,225,225);
+//    private static final Color BG = new Color(242,244,247);
+//    private static final Color CARD_BORDER = new Color(225,225,225);
+
 
     public SettingsPanel(){
 
@@ -15,17 +16,28 @@ public class SettingsPanel extends JPanel {
 
         setBorder(new EmptyBorder(20,20,20,20));
 
-        setBackground(BG);
+//        setBackground(BG);
+        applyTheme();
+        ThemeManager.addListener(this::applyTheme);
+
 
         add(title(), BorderLayout.NORTH);
 
         add(content(), BorderLayout.CENTER);
     }
 
+    private void applyTheme(){
+        setBackground(ThemeManager.bg());
+        repaint();
+    }
+
     private JLabel title(){
 
         JLabel label =
                 new JLabel("Settings");
+
+        label.setForeground(ThemeManager.text());
+        ThemeManager.addListener(() -> label.setForeground(ThemeManager.text()));
 
         label.setFont(
                 new Font("Segoe UI", Font.BOLD, 20)
@@ -54,6 +66,10 @@ public class SettingsPanel extends JPanel {
         JScrollPane scroll =
                 new JScrollPane(wrapper);
 
+        scroll.setOpaque(false);
+        scroll.getViewport().setOpaque(false);
+
+
         scroll.setBorder(null);
 
         scroll.getVerticalScrollBar()
@@ -80,7 +96,17 @@ public class SettingsPanel extends JPanel {
         JRadioButton dark =
                 new JRadioButton("Dark Mode");
 
-        light.setSelected(true);
+//        light.setSelected(true);
+        light.setSelected(!ThemeManager.isDark());
+        dark.setSelected(ThemeManager.isDark());
+
+        light.addActionListener(ActionEvente -> ThemeManager.setMode(ThemeManager.Mode.LIGHT));
+        dark.addActionListener(ActionEvente -> ThemeManager.setMode(ThemeManager.Mode.DARK));
+
+        ThemeManager.addListener(() ->{
+            light.setSelected(!ThemeManager.isDark());
+            dark.setSelected(ThemeManager.isDark());
+        });
 
         ButtonGroup group =
                 new ButtonGroup();
@@ -92,6 +118,15 @@ public class SettingsPanel extends JPanel {
         styleRadio(light);
 
         styleRadio(dark);
+
+        light.addActionListener(ActionEvente -> ThemeManager.setMode(ThemeManager.Mode.LIGHT));
+        dark.addActionListener(ActionEvente -> ThemeManager.setMode(ThemeManager.Mode.DARK));
+
+        ThemeManager.addListener(() ->{
+            light.setSelected(!ThemeManager.isDark());
+            dark.setSelected(ThemeManager.isDark());
+        });
+
 
         card.add(header);
 
@@ -125,9 +160,9 @@ public class SettingsPanel extends JPanel {
                 new Font("Segoe UI", Font.PLAIN, 12)
         );
 
-        description.setForeground(
-                new Color(120,120,120)
-        );
+        description.setForeground(ThemeManager.subtext());
+        ThemeManager.addListener(() -> description.setForeground(ThemeManager.subtext()));
+
 
         JButton reset =
                 new JButton("Reset Data");
@@ -166,19 +201,14 @@ public class SettingsPanel extends JPanel {
         JPanel card =
                 new JPanel();
 
-        card.setBackground(Color.WHITE);
+       card.setBackground(ThemeManager.card());
 
-        card.setBorder(
-
-                BorderFactory.createCompoundBorder(
-
-                        BorderFactory.createLineBorder(CARD_BORDER),
-
-                        new EmptyBorder(16,18,16,18)
-
-                )
-
-        );
+       card.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(ThemeManager.cardBorder()), new EmptyBorder(16,18,16,18)));
+       ThemeManager.addListener(() -> {
+           card.setBackground(ThemeManager.card());
+           card.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(ThemeManager.cardBorder()), new EmptyBorder(16,18,16,18)));
+           card.repaint();
+       });
 
         return card;
     }
@@ -187,6 +217,9 @@ public class SettingsPanel extends JPanel {
 
         JLabel label =
                 new JLabel(text);
+
+        label.setForeground(ThemeManager.text());
+        ThemeManager.addListener(() -> label.setForeground(ThemeManager.text()));
 
         label.setFont(
                 new Font("Segoe UI", Font.BOLD, 15)
@@ -202,5 +235,12 @@ public class SettingsPanel extends JPanel {
         );
 
         r.setOpaque(false);
+
+        r.setForeground(ThemeManager.text());
+        ThemeManager.addListener(() -> {
+            r.setForeground(ThemeManager.text());
+            r.repaint();
+
+        });
     }
 }
