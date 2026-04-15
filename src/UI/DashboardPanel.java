@@ -158,6 +158,7 @@ public class DashboardPanel extends JPanel {
 
         switch(t.type){
             case "Account updated" -> typeBadge.setBackground(new Color(90,120,160));
+
             case "Deposit"         -> typeBadge.setBackground(GREEN_BADGE);
             case "Withdraw"        -> typeBadge.setBackground(RED_BADGE);
             case "Delete"          -> typeBadge.setBackground(RED_BADGE);

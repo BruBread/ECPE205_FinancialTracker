@@ -1,18 +1,14 @@
-//sample - i added some code here to fix the problem
-
 package Data_backend;
 
 import javax.swing.ImageIcon;
+import java.util.ArrayList;
 
-/**
- * This is an account
- * It Extends the original account model with display name and logo.
- */
 public class BankAccount implements java.io.Serializable {
 
-    public String bankName;
-    public double balance;
+    public String    bankName;
+    public double    balance;
     public ImageIcon logo;
+    public ArrayList<SubAccount> subAccounts = new ArrayList<>(); // NEW
 
     public BankAccount(String bankName, double balance, ImageIcon logo) {
         this.bankName = bankName;
@@ -20,9 +16,17 @@ public class BankAccount implements java.io.Serializable {
         this.logo     = logo;
     }
 
-    public String getName()    { return bankName; }
-    public double getAmount()  { return balance; }
+    // NEW: total balance = sum of all sub-accounts (or just balance if none)
+    public double getTotalBalance() {
+        if (subAccounts.isEmpty()) return balance;
+        double total = 0;
+        for (SubAccount s : subAccounts) total += s.balance;
+        return total;
+    }
 
-    public void setName(String name)       { this.bankName = name; }
-    public void setAmount(double amount)   { this.balance  = amount; }
+    public String getName()   { return bankName; }
+    public double getAmount() { return getTotalBalance(); } // updated
+
+    public void setName(String name)     { this.bankName = name; }
+    public void setAmount(double amount) { this.balance  = amount; }
 }

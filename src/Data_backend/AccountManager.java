@@ -187,7 +187,7 @@ public class AccountManager {
 
     public static double totalAssets() {
         double total = 0;
-        for (BankAccount a : accounts) total += a.balance;
+        for (BankAccount a : accounts) total += a.getTotalBalance();
         return total;
     } // Calculate all assets from every account from every bank
 
@@ -208,4 +208,29 @@ public class AccountManager {
 
             r.run();
     }
+    public static void addSubAccount(BankAccount bank, SubAccount sub) {
+        bank.subAccounts.add(sub);
+        log(bank.bankName, "Sub-account added: " + sub.name, sub.balance, bank.logo);
+        notifyListeners();
+        saveData();
+    }
+
+    public static void updateSubAccount(BankAccount bank, SubAccount sub,
+                                        double oldBalance) {
+        double diff = sub.balance - oldBalance;
+        log(bank.bankName,
+                diff >= 0 ? "Deposit (" + sub.name + ")" : "Withdraw (" + sub.name + ")",
+                Math.abs(diff), bank.logo);
+        notifyListeners();
+        saveData();
+    }
+
+    public static void deleteSubAccount(BankAccount bank, SubAccount sub) {
+        bank.subAccounts.remove(sub);
+        log(bank.bankName, "Sub-account deleted: " + sub.name, sub.balance, bank.logo);
+        notifyListeners();
+        saveData();
+    }
+
+
 }
