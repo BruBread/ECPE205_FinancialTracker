@@ -11,6 +11,8 @@ import java.util.Map;
 
 public class AddAccountDialog extends JDialog {
 
+
+
     private final JTextField nameField = new JTextField();
     private final JTextField balanceField = new JTextField();
     private final JLabel preview = new JLabel("No logo", JLabel.CENTER);

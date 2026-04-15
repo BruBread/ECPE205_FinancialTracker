@@ -10,6 +10,7 @@ import Data_backend.SubAccount;
 
 public class AccountsPanel extends JPanel {
 
+
     private JPanel listPanel;
     private JLabel totalLabel;
     private JLabel sectionLabel;

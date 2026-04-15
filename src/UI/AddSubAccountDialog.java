@@ -17,6 +17,8 @@ public class AddSubAccountDialog extends JDialog {
 
     private static final double FEE_RATE = 0.01; // 1% fee
 
+
+
     // Pre-defined sub-account types for the dropdown
     private final String[] TYPES = {
             "Custom...", "Savings", "Expenses", "Insurance",

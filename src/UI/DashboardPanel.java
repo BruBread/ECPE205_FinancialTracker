@@ -11,6 +11,8 @@ import java.awt.*;
 
 public class DashboardPanel extends JPanel {
 
+
+
     private JPanel bankGrid;
     private JPanel transactionList;
     private JLabel totalLabel;
