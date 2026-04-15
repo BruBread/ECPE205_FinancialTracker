@@ -210,7 +210,7 @@ public class AccountManager {
     }
     public static void addSubAccount(BankAccount bank, SubAccount sub) {
         bank.subAccounts.add(sub);
-        log(bank.bankName, "Sub-account added: " + sub.name, sub.balance, bank.logo);
+        log(bank.bankName, "Deposit", sub.balance, bank.logo);
         notifyListeners();
         saveData();
     }
@@ -218,16 +218,18 @@ public class AccountManager {
     public static void updateSubAccount(BankAccount bank, SubAccount sub,
                                         double oldBalance) {
         double diff = sub.balance - oldBalance;
-        log(bank.bankName,
-                diff >= 0 ? "Deposit (" + sub.name + ")" : "Withdraw (" + sub.name + ")",
-                Math.abs(diff), bank.logo);
+        if (diff != 0) {
+            log(bank.bankName,
+                    diff >= 0 ? "Deposit" : "Withdraw",
+                    Math.abs(diff), bank.logo);
+        }
         notifyListeners();
         saveData();
     }
 
     public static void deleteSubAccount(BankAccount bank, SubAccount sub) {
         bank.subAccounts.remove(sub);
-        log(bank.bankName, "Sub-account deleted: " + sub.name, sub.balance, bank.logo);
+        log(bank.bankName, "Delete", sub.balance, bank.logo);
         notifyListeners();
         saveData();
     }

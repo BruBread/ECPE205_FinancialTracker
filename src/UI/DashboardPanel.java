@@ -181,9 +181,14 @@ public class DashboardPanel extends JPanel {
         if(t.amount > 0)
             amountText = sign+"₱"+String.format("%,.2f",t.amount);
 
+        Color amtColor;
+        if (sign.equals("+"))       amtColor = new Color(50, 160, 80);
+        else if (sign.equals("-"))  amtColor = new Color(210, 70, 60);
+        else                        amtColor = ThemeManager.subtext();
+
         JLabel amtLabel = new JLabel(shortenCurrency(amountText, 16));
         amtLabel.setFont(new Font("Segoe UI",Font.BOLD,13));
-        amtLabel.setForeground(sign.equals("+") ? new Color(50,160,80) : new Color(210,70,60));
+        amtLabel.setForeground(amtColor);
         amtLabel.setHorizontalAlignment(JLabel.RIGHT);
 
         JPanel amtWrap = new JPanel(new BorderLayout());
