@@ -3,220 +3,144 @@ package Data_backend;
 import java.util.ArrayList;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.io.*;
 
 /**
- * This is the data manager, it handles everything
- * I hate u harley
+ * AccountManager — updated to use SQLite via DatabaseManager.
+ *
+ * CHANGES from original:
+ *   • saveData()   → removed (DB writes happen immediately on each operation)
+ *   • loadData()   → now calls DatabaseManager.loadAllData()
+ *   • resetData()  → clears in-memory lists; DB rows are deleted via raw SQL
+ *   • addAccount / updateAccount / deleteAccount → also call DatabaseManager
+ *   • addSubAccount / updateSubAccount / deleteSubAccount → same
+ *   • log()        → also calls DatabaseManager.insertTransaction()
+ *
+ * Everything else (listeners, totalAssets, etc.) is unchanged.
  */
 public class AccountManager {
 
-    private static final String SAVE_FILE = "financial_data.dat";
+    public static ArrayList<BankAccount> accounts     = new ArrayList<>();
+    public static ArrayList<Transaction> transactions = new ArrayList<>();
 
-    public static void resetData(){
+    // -----------------------------------------------------------------------
+    // Startup / shutdown
+    // -----------------------------------------------------------------------
 
+    /**
+     * Called once at application start (from Main.java).
+     * Ensures the DB schema exists, then reads all persisted data.
+     */
+    public static void loadData() {
+        DatabaseManager.createTables();   // no-op if tables already exist
+        DatabaseManager.loadAllData();    // populates accounts + transactions
+    }
+
+    /**
+     * Clears all data from memory AND from the database.
+     * Equivalent to the old resetData() which deleted the .dat file.
+     */
+    public static void resetData() {
         accounts.clear();
-
         transactions.clear();
 
-        try{
+        // Wipe every row (foreign keys cascade to sub_accounts)
+        try (java.sql.Connection conn = DatabaseManager.getConnection();
+             java.sql.Statement  stmt = conn.createStatement()) {
 
-            java.io.File file =
-                    new java.io.File("financial_data.dat");
+            stmt.execute("PRAGMA foreign_keys = ON;");
+            stmt.execute("DELETE FROM transactions;");
+            stmt.execute("DELETE FROM bank_accounts;");  // cascades to sub_accounts
 
-            if(file.exists())
-                file.delete();
-
-        }catch(Exception e){
-
-            e.printStackTrace();
-
+        } catch (java.sql.SQLException e) {
+            System.err.println("[DB] resetData error: " + e.getMessage());
         }
 
         notifyListeners();
     }
 
-    public static void saveData(){
+    // -----------------------------------------------------------------------
+    // Internal helpers
+    // -----------------------------------------------------------------------
 
-        try{
-
-            ObjectOutputStream out =
-                    new ObjectOutputStream(
-
-                            new FileOutputStream(SAVE_FILE)
-
-                    );
-
-            out.writeObject(accounts);
-
-            out.writeObject(transactions);
-
-            out.close();
-
-        }
-        catch(Exception e){
-
-            e.printStackTrace();
-
-        }
-
+    /** Logs a transaction in memory AND persists it to the DB. */
+    private static void log(String bank, String type, double amount,
+                            javax.swing.ImageIcon logo) {
+        String date = today();
+        transactions.add(new Transaction(bank, type, amount, date, logo));
+        DatabaseManager.insertTransaction(bank, type, amount, date);
     }
 
-    public static void loadData(){
-
-        try{
-
-            ObjectInputStream in =
-                    new ObjectInputStream(
-
-                            new FileInputStream(SAVE_FILE)
-
-                    );
-
-            accounts =
-                    (ArrayList<BankAccount>) in.readObject();
-
-            transactions =
-                    (ArrayList<Transaction>) in.readObject();
-
-            in.close();
-
-        }
-        catch(Exception e){
-
-            System.out.println("No previous save found");
-
-        }
-
+    private static String today() {
+        return LocalDate.now().format(DateTimeFormatter.ofPattern("dd MMMM yyyy"));
     }
 
-    public static ArrayList<BankAccount>  accounts     = new ArrayList<>();
-    public static ArrayList<Transaction>  transactions = new ArrayList<>();
+    // -----------------------------------------------------------------------
+    // BankAccount CRUD
+    // -----------------------------------------------------------------------
 
-    // Stores all data to bank
-    private static void log(String bank, String type, double amount, javax.swing.ImageIcon logo) {
-        transactions.add(new Transaction(bank, type, amount, today(), logo));
-    }
-
-    // Add, Update, Delete Logics here
     public static void addAccount(BankAccount acc) {
-
         accounts.add(acc);
-
+        DatabaseManager.insertBankAccount(acc.bankName, acc.balance);
         log(acc.bankName, "Deposit", acc.balance, acc.logo);
-
         notifyListeners();
-        saveData();
     }
-    public static boolean accountExists(String name){
 
-        for(BankAccount a : accounts)
-
-            if(a.bankName.equalsIgnoreCase(name))
-
-                return true;
-
+    public static boolean accountExists(String name) {
+        for (BankAccount a : accounts)
+            if (a.bankName.equalsIgnoreCase(name)) return true;
         return false;
     }
 
-    public static void updateAccount(
+    public static void updateAccount(BankAccount acc, double oldBalance,
+                                     String oldName, javax.swing.ImageIcon oldLogo) {
 
-            BankAccount acc,
+        boolean nameChanged    = !oldName.equals(acc.bankName);
+        boolean logoChanged    = !java.util.Objects.equals(oldLogo, acc.logo);
+        boolean balanceChanged = acc.balance != oldBalance;
 
-            double oldBalance,
+        // Persist the updated name/balance to the DB
+        DatabaseManager.updateBankAccount(oldName, acc.bankName, acc.balance);
 
-            String oldName,
+        if (nameChanged || logoChanged)
+            log(acc.bankName, "Account updated", 0, acc.logo);
 
-            javax.swing.ImageIcon oldLogo
-
-    ) {
-
-        boolean nameChanged =
-                !oldName.equals(acc.bankName);
-
-        boolean logoChanged =
-                !java.util.Objects.equals(oldLogo, acc.logo);
-
-        boolean balanceChanged =
-                acc.balance != oldBalance;
-
-
-        // group name + logo change into one event
-        if(nameChanged || logoChanged)
-
+        if (balanceChanged) {
+            double diff = acc.balance - oldBalance;
             log(acc.bankName,
-                    "Account updated",
-                    0,
-                    acc.logo);
-
-
-        if(balanceChanged){
-
-            double diff =
-                    acc.balance - oldBalance;
-
-            log(
-
-                    acc.bankName,
-
-                    diff >= 0
-                            ? "Deposit"
-                            : "Withdraw",
-
-                    Math.abs(diff),
-
-                    acc.logo
-
-            );
-
+                    diff >= 0 ? "Deposit" : "Withdraw",
+                    Math.abs(diff), acc.logo);
         }
 
         notifyListeners();
-        saveData();
     }
 
     public static void deleteAccount(BankAccount acc) {
-
         accounts.remove(acc);
-
         log(acc.bankName, "Delete", acc.balance, acc.logo);
-
+        DatabaseManager.deleteBankAccount(acc.bankName); // cascades sub_accounts
         notifyListeners();
-        saveData();
     }
 
     public static double totalAssets() {
         double total = 0;
         for (BankAccount a : accounts) total += a.getTotalBalance();
         return total;
-    } // Calculate all assets from every account from every bank
-
-    // Returns current date lol
-    private static String today() {
-        return LocalDate.now().format(DateTimeFormatter.ofPattern("dd MMMM yyyy"));
     }
 
-    private static final java.util.List<Runnable> listeners = new java.util.ArrayList<>();
+    // -----------------------------------------------------------------------
+    // SubAccount CRUD
+    // -----------------------------------------------------------------------
 
-    public static void addListener(Runnable r){
-        listeners.add(r);
-    }
-
-    private static void notifyListeners(){
-
-        for(Runnable r : listeners)
-
-            r.run();
-    }
     public static void addSubAccount(BankAccount bank, SubAccount sub) {
         bank.subAccounts.add(sub);
+        DatabaseManager.insertSubAccount(bank.bankName, sub.name, sub.balance);
         log(bank.bankName, "Deposit", sub.balance, bank.logo);
         notifyListeners();
-        saveData();
     }
 
     public static void updateSubAccount(BankAccount bank, SubAccount sub,
                                         double oldBalance) {
+        DatabaseManager.updateSubAccount(bank.bankName, sub.name, sub.balance);
         double diff = sub.balance - oldBalance;
         if (diff != 0) {
             log(bank.bankName,
@@ -224,15 +148,24 @@ public class AccountManager {
                     Math.abs(diff), bank.logo);
         }
         notifyListeners();
-        saveData();
     }
 
     public static void deleteSubAccount(BankAccount bank, SubAccount sub) {
         bank.subAccounts.remove(sub);
+        DatabaseManager.deleteSubAccount(bank.bankName, sub.name);
         log(bank.bankName, "Delete", sub.balance, bank.logo);
         notifyListeners();
-        saveData();
     }
 
+    // -----------------------------------------------------------------------
+    // Listener pattern (unchanged)
+    // -----------------------------------------------------------------------
 
+    private static final java.util.List<Runnable> listeners = new java.util.ArrayList<>();
+
+    public static void addListener(Runnable r) { listeners.add(r); }
+
+    private static void notifyListeners() {
+        for (Runnable r : listeners) r.run();
+    }
 }
