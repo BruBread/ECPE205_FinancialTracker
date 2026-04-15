@@ -39,6 +39,13 @@ public class Main extends JFrame {
 
         styleTabs(tabs);
         add(tabs);
+
+        UI.ThemeManager.addListener(() -> {
+            tabs.setBackground(new Color(30,110,50));
+            getContentPane().setBackground(UI.ThemeManager.bg());
+            SwingUtilities.updateComponentTreeUI(this);
+            repaint();
+        });
     }
 
     // ✅ CLEAN ICON LOADER
