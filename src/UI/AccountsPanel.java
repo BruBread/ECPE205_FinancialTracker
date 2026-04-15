@@ -90,7 +90,7 @@ public class AccountsPanel extends JPanel {
         listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.Y_AXIS));
         listPanel.setOpaque(false);
 
-        sectionLabel = new JLabel("Your Accounts (0)");
+        sectionLabel = new JLabel("  Your Accounts (0)");
         sectionLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
         sectionLabel.setBorder(new EmptyBorder(0, 0, 10, 0));
         sectionLabel.setForeground(ThemeManager.text());

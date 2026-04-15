@@ -78,10 +78,16 @@ public class AccountManager {
     // BankAccount CRUD
     // -----------------------------------------------------------------------
 
-    public static void addAccount(BankAccount acc) {
+    public static void addAccount(BankAccount acc, double initialBalance) {
         accounts.add(acc);
-        DatabaseManager.insertBankAccount(acc.bankName, acc.balance);
-        log(acc.bankName, "Deposit", acc.balance, acc.logo);
+        DatabaseManager.insertBankAccount(acc.bankName);
+
+        // Every new bank starts with a default "Wallet" sub-account
+        SubAccount wallet = new SubAccount("Wallet", initialBalance);
+        acc.subAccounts.add(wallet);
+        DatabaseManager.insertSubAccount(acc.bankName, wallet.name, wallet.balance);
+
+        log(acc.bankName, "Deposit", initialBalance, acc.logo);
         notifyListeners();
     }
 
@@ -91,32 +97,24 @@ public class AccountManager {
         return false;
     }
 
-    public static void updateAccount(BankAccount acc, double oldBalance,
+    public static void updateAccount(BankAccount acc,
                                      String oldName, javax.swing.ImageIcon oldLogo) {
 
-        boolean nameChanged    = !oldName.equals(acc.bankName);
-        boolean logoChanged    = !java.util.Objects.equals(oldLogo, acc.logo);
-        boolean balanceChanged = acc.balance != oldBalance;
+        boolean nameChanged = !oldName.equals(acc.bankName);
+        boolean logoChanged = !java.util.Objects.equals(oldLogo, acc.logo);
 
-        // Persist the updated name/balance to the DB
-        DatabaseManager.updateBankAccount(oldName, acc.bankName, acc.balance);
+        // Persist the updated name to the DB
+        DatabaseManager.updateBankAccount(oldName, acc.bankName);
 
         if (nameChanged || logoChanged)
             log(acc.bankName, "Account updated", 0, acc.logo);
-
-        if (balanceChanged) {
-            double diff = acc.balance - oldBalance;
-            log(acc.bankName,
-                    diff >= 0 ? "Deposit" : "Withdraw",
-                    Math.abs(diff), acc.logo);
-        }
 
         notifyListeners();
     }
 
     public static void deleteAccount(BankAccount acc) {
         accounts.remove(acc);
-        log(acc.bankName, "Delete", acc.balance, acc.logo);
+        log(acc.bankName, "Delete", acc.getTotalBalance(), acc.logo);
         DatabaseManager.deleteBankAccount(acc.bankName); // cascades sub_accounts
         notifyListeners();
     }

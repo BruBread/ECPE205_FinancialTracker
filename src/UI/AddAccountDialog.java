@@ -33,7 +33,9 @@ public class AddAccountDialog extends JDialog {
         build();
 
         nameField.setText(acc.bankName);
-        balanceField.setText(String.valueOf(acc.balance));
+        // Balance is managed via sub-accounts; hide the field when editing
+        balanceField.setVisible(false);
+        balanceField.getParent(); // field is in the form but hidden
 
         logo = acc.logo;
         if(logo!=null) setPreview(logo);
@@ -218,7 +220,8 @@ public class AddAccountDialog extends JDialog {
                 return;
             }
 
-            AccountManager.addAccount(new BankAccount(name,balance,logo));
+            // Bank carries no direct balance — initial amount goes to "Wallet" sub-account
+            AccountManager.addAccount(new BankAccount(name, logo), balance);
 
         } else {
 
@@ -231,7 +234,6 @@ public class AddAccountDialog extends JDialog {
 
             boolean changed =
                     !editing.bankName.equals(name)
-                            || editing.balance != balance
                             || !java.util.Objects.equals(editing.logo, logo);
 
             if(!changed){
@@ -239,15 +241,13 @@ public class AddAccountDialog extends JDialog {
                 return;
             }
 
-            double oldBalance = editing.balance;
-            String oldName = editing.bankName;
+            String oldName    = editing.bankName;
             ImageIcon oldLogo = editing.logo;
 
             editing.bankName = name;
-            editing.balance = balance;
-            editing.logo = logo;
+            editing.logo     = logo;
 
-            AccountManager.updateAccount(editing, oldBalance, oldName, oldLogo);
+            AccountManager.updateAccount(editing, oldName, oldLogo);
         }
         dispose();
     }

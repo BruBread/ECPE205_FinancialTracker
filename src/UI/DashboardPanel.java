@@ -324,7 +324,7 @@ public class DashboardPanel extends JPanel {
             ThemeManager.addListener(() -> logoLabel.setForeground(ThemeManager.text()));
         }
 
-        JLabel balLabel = new JLabel("₱"+String.format("%,.2f",acc.balance), JLabel.CENTER);
+        JLabel balLabel = new JLabel("₱"+String.format("%,.2f",acc.getTotalBalance()), JLabel.CENTER);
         balLabel.setFont(new Font("Segoe UI",Font.BOLD,14));
         balLabel.setForeground(ThemeManager.text());
         ThemeManager.addListener(() -> balLabel.setForeground(ThemeManager.text()));

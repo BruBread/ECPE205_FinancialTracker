@@ -58,8 +58,7 @@ public class DatabaseManager {
         String bankAccounts = """
             CREATE TABLE IF NOT EXISTS bank_accounts (
                 id        INTEGER PRIMARY KEY AUTOINCREMENT,
-                bank_name TEXT    NOT NULL UNIQUE,
-                balance   REAL    NOT NULL DEFAULT 0
+                bank_name TEXT    NOT NULL UNIQUE
             );
             """;
 
@@ -112,14 +111,13 @@ public class DatabaseManager {
      * @param bankName  display name (must be unique)
      * @param balance   opening balance
      */
-    public static void insertBankAccount(String bankName, double balance) {
-        String sql = "INSERT INTO bank_accounts (bank_name, balance) VALUES (?, ?)";
+    public static void insertBankAccount(String bankName) {
+        String sql = "INSERT INTO bank_accounts (bank_name) VALUES (?)";
 
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, bankName);
-            ps.setDouble(2, balance);
             ps.executeUpdate();
 
         } catch (SQLException e) {
@@ -135,15 +133,14 @@ public class DatabaseManager {
      * @param newName   the new name to set
      * @param newBalance the new balance to set
      */
-    public static void updateBankAccount(String oldName, String newName, double newBalance) {
-        String sql = "UPDATE bank_accounts SET bank_name = ?, balance = ? WHERE bank_name = ?";
+    public static void updateBankAccount(String oldName, String newName) {
+        String sql = "UPDATE bank_accounts SET bank_name = ? WHERE bank_name = ?";
 
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, newName);
-            ps.setDouble(2, newBalance);
-            ps.setString(3, oldName);
+            ps.setString(2, oldName);
             ps.executeUpdate();
 
         } catch (SQLException e) {
@@ -316,17 +313,16 @@ public class DatabaseManager {
 
             // ── 1. Load bank accounts ────────────────────────────────────────
             ResultSet rsBank = stmt.executeQuery(
-                    "SELECT id, bank_name, balance FROM bank_accounts ORDER BY id");
+                    "SELECT id, bank_name FROM bank_accounts ORDER BY id");
 
             while (rsBank.next()) {
                 int    id       = rsBank.getInt("id");
                 String name     = rsBank.getString("bank_name");
-                double balance  = rsBank.getDouble("balance");
 
                 // Reload the logo from bundled resources (not stored in DB)
                 javax.swing.ImageIcon logo = loadLogoByName(name);
 
-                BankAccount account = new BankAccount(name, balance, logo);
+                BankAccount account = new BankAccount(name, logo);
 
                 // ── 2. Load sub-accounts for this bank ───────────────────────
                 String subSql = "SELECT name, balance FROM sub_accounts WHERE bank_account_id = ?";
