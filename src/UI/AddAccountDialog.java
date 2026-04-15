@@ -18,6 +18,8 @@ public class AddAccountDialog extends JDialog {
     private final JComboBox<String> presetDropdown = new JComboBox<>();
     private final Map<String, ImageIcon> presets = new LinkedHashMap<>();
 
+    private static final double FEE_RATE = 0.01; // 1% fee
+
     private ImageIcon logo;
     private BankAccount editing;
 
@@ -47,7 +49,7 @@ public class AddAccountDialog extends JDialog {
 
         loadPresets();
 
-        setSize(320,420);
+        setSize(320,440);
         setLocationRelativeTo(null);
         setResizable(false);
 
@@ -94,6 +96,11 @@ public class AddAccountDialog extends JDialog {
         balanceField.setCaretColor(ThemeManager.text());
         balanceField.setBorder(BorderFactory.createLineBorder(ThemeManager.cardBorder()));
 
+        // Fee notice label (only shown when adding, not editing)
+        JLabel feeNote = new JLabel("<html><i>A 1% transaction fee will be applied to the initial balance.</i></html>");
+        feeNote.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        feeNote.setForeground(new Color(130, 130, 130));
+
         p.add(label("Choose a preset / create a new Bank"));
         p.add(presetDropdown);
 
@@ -102,6 +109,10 @@ public class AddAccountDialog extends JDialog {
 
         p.add(label("Balance (₱)"));
         p.add(balanceField);
+
+        if (editing == null) {
+            p.add(feeNote);
+        }
 
         p.add(uploadBtn);
         p.add(preview);
@@ -195,21 +206,21 @@ public class AddAccountDialog extends JDialog {
             return;
         }
 
-        double balance;
-        String text = balanceField.getText().trim();
-        if(text.isEmpty())
-            balance = 0;
-        else{
-            try{
-                balance = Double.parseDouble(text);
-                if(balance < 0){
-                    JOptionPane.showMessageDialog(this, "Balance cannot be negative.");
+        double rawBalance = 0;
+        if (editing == null) {
+            // Only process balance when adding a new account
+            String text = balanceField.getText().trim();
+            if (!text.isEmpty()) {
+                try {
+                    rawBalance = Double.parseDouble(text);
+                    if (rawBalance < 0) {
+                        JOptionPane.showMessageDialog(this, "Balance cannot be negative.");
+                        return;
+                    }
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(this, "Please enter a valid balance.");
                     return;
                 }
-            }
-            catch(NumberFormatException ex){
-                JOptionPane.showMessageDialog(this, "Please enter a valid balance.");
-                return;
             }
         }
 
@@ -220,8 +231,24 @@ public class AddAccountDialog extends JDialog {
                 return;
             }
 
-            // Bank carries no direct balance — initial amount goes to "Wallet" sub-account
-            AccountManager.addAccount(new BankAccount(name, logo), balance);
+            // Apply 1% fee to the initial deposit
+            double afterFee = rawBalance * (1.0 - FEE_RATE);
+            afterFee = Math.round(afterFee * 100.0) / 100.0;
+
+            // Show fee confirmation if balance is non-zero
+            if (rawBalance > 0) {
+                int confirm = JOptionPane.showConfirmDialog(this,
+                        String.format(
+                                "A 1%% fee will be deducted from your initial deposit.\n\nEntered:  ₱%,.2f\nFee (1%%): ₱%,.2f\nFinal:      ₱%,.2f\n\nProceed?",
+                                rawBalance, rawBalance * FEE_RATE, afterFee),
+                        "Confirm Transaction Fee",
+                        JOptionPane.YES_NO_OPTION);
+
+                if (confirm != JOptionPane.YES_OPTION) return;
+            }
+
+            // Bank carries no direct balance — initial amount (after fee) goes to "Wallet" sub-account
+            AccountManager.addAccount(new BankAccount(name, logo), afterFee);
 
         } else {
 

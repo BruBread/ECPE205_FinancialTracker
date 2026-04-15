@@ -15,6 +15,8 @@ public class AccountsPanel extends JPanel {
     private JLabel sectionLabel;
 
     private static final Color GREEN_TEXT = new Color(50, 160, 80);
+    private static final Color RED_TEXT   = new Color(210, 60, 60);
+    private static final double LOW_BALANCE_THRESHOLD = 10.00;
 
     public AccountsPanel() {
         setLayout(new BorderLayout(20, 20));
@@ -38,6 +40,11 @@ public class AccountsPanel extends JPanel {
     private void applyTheme() {
         setBackground(ThemeManager.bg());
         repaint();
+    }
+
+    // ── Helper: pick balance color based on threshold ────────────────────────
+    private Color balanceColor(double balance) {
+        return balance < LOW_BALANCE_THRESHOLD ? RED_TEXT : GREEN_TEXT;
     }
 
     // ── Header row: "Accounts" title + "+ Add Account" button ──────────────
@@ -157,9 +164,10 @@ public class AccountsPanel extends JPanel {
         nameLabel.setFont(new Font("Segoe UI", Font.BOLD, 15));
         nameLabel.setForeground(ThemeManager.text());
 
-        JLabel balLabel = new JLabel("₱" + String.format("%,.2f", acc.getTotalBalance()));
+        double bankTotal = acc.getTotalBalance();
+        JLabel balLabel = new JLabel("₱" + String.format("%,.2f", bankTotal));
         balLabel.setFont(new Font("Segoe UI", Font.BOLD, 15));
-        balLabel.setForeground(GREEN_TEXT);
+        balLabel.setForeground(balanceColor(bankTotal));
 
         JPanel textPanel = new JPanel(new GridLayout(2, 1));
         textPanel.setOpaque(false);
@@ -208,7 +216,7 @@ public class AccountsPanel extends JPanel {
 
             JLabel subBal = new JLabel("₱" + String.format("%,.2f", sub.balance));
             subBal.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-            subBal.setForeground(GREEN_TEXT);
+            subBal.setForeground(balanceColor(sub.balance));
 
             JButton editSub = new JButton("Edit");
             editSub.setFont(new Font("Segoe UI", Font.PLAIN, 11));

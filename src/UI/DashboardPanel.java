@@ -20,6 +20,10 @@ public class DashboardPanel extends JPanel {
     private static final Color GREEN_BADGE = new Color(50,160,80);
     private static final Color BLUE_BADGE  = new Color(70,120,200);
 
+    private static final Color GREEN_TEXT         = new Color(50, 160, 80);
+    private static final Color RED_TEXT           = new Color(210, 60, 60);
+    private static final double LOW_BALANCE_THRESHOLD = 10.00;
+
     public DashboardPanel() {
         setLayout(new BorderLayout(20,20));
         setBorder(new EmptyBorder(20,20,20,20));
@@ -48,6 +52,11 @@ public class DashboardPanel extends JPanel {
         });
 
         refreshAll();
+    }
+
+    // ── Helper: pick balance color based on threshold ────────────────────────
+    private Color balanceColor(double balance) {
+        return balance < LOW_BALANCE_THRESHOLD ? RED_TEXT : GREEN_TEXT;
     }
 
     private JPanel leftPanel() {
@@ -158,7 +167,6 @@ public class DashboardPanel extends JPanel {
 
         switch(t.type){
             case "Account updated" -> typeBadge.setBackground(new Color(90,120,160));
-
             case "Deposit"         -> typeBadge.setBackground(GREEN_BADGE);
             case "Withdraw"        -> typeBadge.setBackground(RED_BADGE);
             case "Delete"          -> typeBadge.setBackground(RED_BADGE);
@@ -203,16 +211,17 @@ public class DashboardPanel extends JPanel {
         left.add(logoLabel, BorderLayout.WEST);
         left.add(textPanel, BorderLayout.CENTER);
 
-        card.add(left, BorderLayout.WEST);
+        card.add(left,      BorderLayout.WEST);
         card.add(badgeWrap, BorderLayout.CENTER);
-        card.add(amtWrap, BorderLayout.EAST);
+        card.add(amtWrap,   BorderLayout.EAST);
 
         return card;
     }
 
     private String shortenCurrency(String text, int max){
+        if(text == null) return "";
         if(text.length() <= max) return text;
-        return text.substring(0, max-3) + "...";
+        return text.substring(0,max-1)+"…";
     }
 
     private JPanel rightPanel(){
@@ -324,10 +333,12 @@ public class DashboardPanel extends JPanel {
             ThemeManager.addListener(() -> logoLabel.setForeground(ThemeManager.text()));
         }
 
-        JLabel balLabel = new JLabel("₱"+String.format("%,.2f",acc.getTotalBalance()), JLabel.CENTER);
+        double total = acc.getTotalBalance();
+        JLabel balLabel = new JLabel("₱"+String.format("%,.2f", total), JLabel.CENTER);
         balLabel.setFont(new Font("Segoe UI",Font.BOLD,14));
-        balLabel.setForeground(ThemeManager.text());
-        ThemeManager.addListener(() -> balLabel.setForeground(ThemeManager.text()));
+        // Use red for low balance, otherwise theme text color
+        balLabel.setForeground(balanceColor(total));
+        ThemeManager.addListener(() -> balLabel.setForeground(balanceColor(acc.getTotalBalance())));
 
         JButton editBtn = new JButton("Edit");
         editBtn.setPreferredSize(new Dimension(60,24));

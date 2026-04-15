@@ -15,6 +15,8 @@ public class AddSubAccountDialog extends JDialog {
     private final BankAccount bank;
     private final SubAccount  editing;
 
+    private static final double FEE_RATE = 0.01; // 1% fee
+
     // Pre-defined sub-account types for the dropdown
     private final String[] TYPES = {
             "Custom...", "Savings", "Expenses", "Insurance",
@@ -34,7 +36,7 @@ public class AddSubAccountDialog extends JDialog {
     }
 
     private void build() {
-        setSize(300, 280);
+        setSize(300, 310);
         setLocationRelativeTo(null);
         setResizable(false);
 
@@ -64,9 +66,15 @@ public class AddSubAccountDialog extends JDialog {
         balanceField.setForeground(ThemeManager.text());
         balanceField.setCaretColor(ThemeManager.text());
 
+        // Fee notice label
+        JLabel feeNote = new JLabel("<html><i style='color:gray'>A 1% transaction fee will be applied.</i></html>");
+        feeNote.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        feeNote.setForeground(new Color(130, 130, 130));
+
         form.add(label("Account Type")); form.add(typeDropdown);
         form.add(label("Sub-Account Name")); form.add(nameField);
         form.add(label("Balance (₱)")); form.add(balanceField);
+        form.add(feeNote);
 
         // Buttons
         JPanel buttons = new JPanel(new GridLayout(1, editing == null ? 1 : 2, 8, 0));
@@ -101,25 +109,51 @@ public class AddSubAccountDialog extends JDialog {
             JOptionPane.showMessageDialog(this, "Please enter a name.");
             return;
         }
-        double balance;
+
+        double rawBalance;
         try {
             String text = balanceField.getText().trim();
-            balance = text.isEmpty() ? 0 : Double.parseDouble(text);
-            if (balance < 0) {
-                JOptionPane.showMessageDialog(this, "Balance cannot be negative.");
+
+            // Block empty balance — sub-account must have a value entered
+            if (text.isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                        "Please enter a balance. Sub-accounts cannot be empty.");
                 return;
             }
+
+            rawBalance = Double.parseDouble(text);
+
+            if (rawBalance <= 0) {
+                JOptionPane.showMessageDialog(this,
+                        "Balance must be greater than 0. Sub-accounts cannot be empty.");
+                return;
+            }
+
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Invalid balance.");
             return;
         }
 
+        // Apply 1% fee to the entered amount
+        double afterFee = rawBalance * (1.0 - FEE_RATE);
+        afterFee = Math.round(afterFee * 100.0) / 100.0; // round to 2 decimal places
+
+        // Confirm with user what the final balance will be
+        int confirm = JOptionPane.showConfirmDialog(this,
+                String.format(
+                        "A 1%% fee will be deducted.\n\nEntered:  ₱%,.2f\nFee (1%%): ₱%,.2f\nFinal:      ₱%,.2f\n\nProceed?",
+                        rawBalance, rawBalance * FEE_RATE, afterFee),
+                "Confirm Transaction Fee",
+                JOptionPane.YES_NO_OPTION);
+
+        if (confirm != JOptionPane.YES_OPTION) return;
+
         if (editing == null) {
-            AccountManager.addSubAccount(bank, new SubAccount(name, balance));
+            AccountManager.addSubAccount(bank, new SubAccount(name, afterFee));
         } else {
             double old = editing.balance;
             editing.name    = name;
-            editing.balance = balance;
+            editing.balance = afterFee;
             AccountManager.updateSubAccount(bank, editing, old);
         }
         dispose();
